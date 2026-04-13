@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Apple-mapped shadcn tokens */
+    --background: 240 5% 96%;       /* #F5F5F7 apple bg */
+    --foreground: 0 0% 11%;          /* #1D1D1F apple text */
+
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 0 0% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 11%;
+
+    --primary: 211 100% 50%;         /* #007AFF apple blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 91%;         /* #E8E8ED */
+    --secondary-foreground: 0 0% 11%;
+
+    --muted: 240 5% 91%;
+    --muted-foreground: 240 4% 48%;  /* #6E6E73 */
+
+    --accent: 211 100% 93%;          /* #E1EFFF blue tint */
+    --accent-foreground: 211 100% 50%;
+
+    --destructive: 3 100% 59%;       /* #FF3B30 apple red */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 89%;              /* subtle border */
+    --input: 0 0% 89%;
+    --ring: 211 100% 50%;
+
+    --radius: 0.75rem;               /* 12px */
+
+    /* Extra apple tokens */
+    --apple-green: #34C759;
+    --apple-green-light: #E8F8ED;
+    --apple-orange: #FF9500;
+    --apple-orange-light: #FFF3E0;
+    --apple-red: #FF3B30;
+    --apple-red-light: #FFECEA;
+    --sidebar-width: 240px;
+    --topbar-height: 60px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  .sidebar-width { width: var(--sidebar-width); }
+  .topbar-height { height: var(--topbar-height); }
+  .ml-sidebar { margin-left: var(--sidebar-width); }
+  .pt-topbar { padding-top: var(--topbar-height); }
+  .top-topbar { top: var(--topbar-height); }
+  .left-sidebar { left: var(--sidebar-width); }
+
+  /* Status colors */
+  .status-occupied    { @apply bg-apple-green-light text-apple-green; }
+  .status-confirmed   { @apply bg-accent text-primary; }
+  .status-maintenance { @apply bg-[#FFECEA] text-[#FF3B30]; }
+  .status-cleaning    { @apply bg-[#FFF3E0] text-[#FF9500]; }
+  .status-available   { @apply bg-apple-green-light text-apple-green; }
+  .status-pending     { @apply bg-[#FFF3E0] text-[#FF9500]; }
+
+  /* Scrollbar */
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+}
