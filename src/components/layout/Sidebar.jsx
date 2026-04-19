@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Calendar, Building2, BookOpen,
-  Settings, HelpCircle, Home, Plus, Users,
+  Calendar, Building2, BookOpen,
+  Settings, Plus, Users,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/timeline', label: 'Timeline', icon: Calendar },
+  { to: '/', label: 'Calendario', icon: Calendar, end: true },
   { to: '/properties', label: 'Propiedades', icon: Building2 },
   { to: '/bookings', label: 'Reservas', icon: BookOpen },
   { to: '/guests', label: 'Huéspedes', icon: Users },
+  { to: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 function NavItem({ to, label, icon: Icon, end }) {
@@ -41,8 +41,8 @@ export function Sidebar() {
     <aside className="fixed top-0 left-0 w-[240px] h-screen bg-card border-r border-border flex flex-col py-5 z-[100]">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 pb-5 border-b border-border mb-4">
-        <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-[#5856D6] flex items-center justify-center">
-          <Home size={18} color="white" />
+        <div className="w-10 h-10 overflow-hidden rounded-[8px] flex items-center justify-center bg-white">
+          <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
         </div>
         <div>
           <div className="text-[15px] font-bold tracking-tight leading-tight">Complejo Angostura</div>
@@ -64,18 +64,12 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 flex flex-col gap-0.5 px-3 overflow-y-auto">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest px-3 mb-1 mt-2">
-          Principal
+          Gestión
         </p>
         {navItems.map((item) => (
           <NavItem key={item.to} {...item} />
         ))}
       </nav>
-
-      {/* Bottom */}
-      <div className="flex flex-col gap-0.5 px-3 pt-4 border-t border-border mt-4">
-        <NavItem to="/settings" label="Configuración" icon={Settings} />
-        <NavItem to="/help" label="Ayuda" icon={HelpCircle} />
-      </div>
     </aside>
   );
 }

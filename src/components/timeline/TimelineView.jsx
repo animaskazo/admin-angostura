@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { addDays, format, differenceInDays, startOfDay, isSameDay, parseISO } from 'date-fns';
+import { addDays, format, differenceInCalendarDays, startOfDay, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Download, Plus } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -15,13 +15,14 @@ const TYPE_INFO = {
   cabin: { label: 'CABAÑAS', emoji: '🏕️' },
   suite: { label: 'SUITES', emoji: '🛏️' },
   house: { label: 'CASAS', emoji: '🏡' },
+  others: { label: 'OTROS', emoji: '🏷️' },
 };
 
 function getBlockStyle(booking, startDate) {
   const checkIn = startOfDay(parseISO(booking.checkIn));
   const checkOut = startOfDay(parseISO(booking.checkOut));
-  const offsetDays = differenceInDays(checkIn, startDate);
-  const durationDays = differenceInDays(checkOut, checkIn);
+  const offsetDays = differenceInCalendarDays(checkIn, startDate);
+  const durationDays = differenceInCalendarDays(checkOut, checkIn);
   const clampedOffset = Math.max(0, offsetDays);
   const clampedEnd = Math.min(DAYS_VISIBLE, offsetDays + durationDays);
   const visibleDays = clampedEnd - clampedOffset;
@@ -49,29 +50,35 @@ export function TimelineView() {
     setNewBookingModalOpen(true);
   };
 
+  // Dynamic Filters
+  const uniqueTypes = Array.from(new Set(properties.map(p => p.type)));
   const FILTERS = [
-    { id: 'all',   label: 'Todos',   count: properties.length },
-    { id: 'cabin', label: 'Cabañas', count: properties.filter(p => p.type === 'cabin').length },
-    { id: 'suite', label: 'Suites',  count: properties.filter(p => p.type === 'suite').length },
-    { id: 'house', label: 'Casas',   count: properties.filter(p => p.type === 'house').length },
+    { id: 'all', label: 'Todos', count: properties.length },
+    ...uniqueTypes.map(type => ({
+      id: type,
+      label: TYPE_INFO[type]?.label || type.toUpperCase(),
+      count: properties.filter(p => p.type === type).length
+    }))
   ];
 
   const days = Array.from({ length: DAYS_VISIBLE }, (_, i) => addDays(startDate, i));
   const navigate = (dir) => setStartDate((d) => addDays(d, dir * 7));
 
   const filtered = activeFilter === 'all' ? properties : properties.filter(p => p.type === activeFilter);
-  const grouped = {
-    cabin: filtered.filter(p => p.type === 'cabin'),
-    suite: filtered.filter(p => p.type === 'suite'),
-    house: filtered.filter(p => p.type === 'house'),
-  };
+  
+  // Dynamic Grouping
+  const activeTypes = Array.from(new Set(filtered.map(p => p.type)));
+  const grouped = {};
+  activeTypes.forEach(type => {
+    grouped[type] = filtered.filter(p => p.type === type);
+  });
 
   return (
     <div className="flex flex-col h-[calc(100vh-60px)] overflow-hidden px-8 py-6 gap-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-[30px] font-bold tracking-tight">Timeline de Propiedades</h1>
+          <h1 className="text-[30px] font-bold tracking-tight">Calendario</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {format(startDate, "d MMM", { locale: es })} — {format(addDays(startDate, DAYS_VISIBLE - 1), "d MMM yyyy", { locale: es })}
           </p>
@@ -153,15 +160,17 @@ export function TimelineView() {
                 {/* Group header */}
                 <div className="flex items-center h-9 bg-background border-b border-border sticky left-0">
                   <div className="w-[220px] shrink-0 flex items-center gap-2 px-5 sticky left-0 bg-background z-10">
-                    <span className="text-sm">{info.emoji}</span>
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{info.label}</span>
+                    <span className="text-sm">{info?.emoji || '🏷️'}</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                      {info?.label || type.toUpperCase()}
+                    </span>
                   </div>
                   <div className="flex-1 border-b border-border" />
                 </div>
 
                 {/* Rows */}
                 {props.map((property) => {
-                  const propBookings = allBookings.filter(b => b.propertyId === property.id);
+                  const propBookings = allBookings.filter(b => b.propertyId?.toLowerCase() === property.id?.toLowerCase());
                   return (
                     <div key={property.id} className="flex h-16 border-b border-border hover:bg-background/50 group">
                       {/* Property info */}

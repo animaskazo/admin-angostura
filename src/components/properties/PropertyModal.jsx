@@ -28,6 +28,7 @@ const PROPERTY_TYPES = [
   { id: 'cabin', label: 'Cabaña', icon: '🏕️' },
   { id: 'suite', label: 'Suite', icon: '🛏️' },
   { id: 'house', label: 'Casa', icon: '🏡' },
+  { id: 'others', label: 'Otros', icon: '🏷️' },
 ];
 
 function SectionHeader({ icon: Icon, children }) {
@@ -74,7 +75,11 @@ export function PropertyModal() {
   }, [selectedProperty, isOpen]);
 
   function suggestNextId(type) {
-    const prefix = type === 'cabin' ? 'C-' : type === 'suite' ? 'S-' : 'H-';
+    const prefix = 
+      type === 'cabin' ? 'C-' : 
+      type === 'suite' ? 'S-' : 
+      type === 'house' ? 'H-' : 
+      'O-';
     const typeProps = properties.filter(p => p.id.startsWith(prefix));
     const maxNum = typeProps.reduce((max, p) => {
       const num = parseInt(p.id.split('-')[1]);
@@ -261,7 +266,7 @@ export function PropertyModal() {
                   </div>
                 </FormField>
               </div>
-              <FormField label="Tarifa por noche (USD)">
+              <FormField label="Tarifa por noche (CLP)">
                 <div className="relative">
                   <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input type="number" className="pl-9 font-semibold" min={0} value={form.rate} onChange={e => update('rate', parseInt(e.target.value))} />

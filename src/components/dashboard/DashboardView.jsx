@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/badge';
 import { useStore } from '@/store/useStore';
 import { statusConfig } from '@/data/mockData';
+import { formatCurrency } from '@/lib/utils';
 
 function KpiCard({ label, value, suffix = '', icon: Icon, change, iconBg, iconColor }) {
   const isPositive = change >= 0;
@@ -59,7 +60,7 @@ function RecentBookings({ bookings, properties }) {
               <div className="flex flex-col items-end gap-1.5">
                 <StatusBadge status={b.status} size="sm" />
                 <span className="text-sm font-semibold">
-                  {b.totalAmount > 0 ? `$${b.totalAmount.toLocaleString()}` : '—'}
+                  {b.totalAmount > 0 ? formatCurrency(b.totalAmount) : '—'}
                 </span>
               </div>
             </div>
@@ -209,7 +210,7 @@ export function DashboardView() {
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-4">
         <KpiCard label="Ocupación actual"   value={stats.occupancyRate} suffix="%" icon={TrendingUp}   change={8}  iconBg="bg-[#E1EFFF]" iconColor="text-primary" />
-        <KpiCard label="Ingresos del mes"   value={`$${stats.monthlyRevenue.toLocaleString()}`}      icon={ArrowUpRight} change={12} iconBg="bg-[#E8F8ED]" iconColor="text-[#34C759]" />
+        <KpiCard label="Ingresos del mes"   value={formatCurrency(stats.monthlyRevenue)}      icon={ArrowUpRight} change={12} iconBg="bg-[#E8F8ED]" iconColor="text-[#34C759]" />
         <KpiCard label="Reservas activas"   value={stats.activeBookings}   icon={Calendar}  iconBg="bg-[#f0ebff]" iconColor="text-[#7c3aed]" />
         <KpiCard label="Unidades disponibles" value={stats.availableUnits} icon={Building2} iconBg="bg-[#FFF3E0]" iconColor="text-[#FF9500]" />
       </div>

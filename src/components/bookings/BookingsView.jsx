@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'Todos' },
@@ -29,14 +29,16 @@ export function BookingsView() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const filtered = bookings.filter(b => {
-    const matchSearch = !search ||
-      b.guestName.toLowerCase().includes(search.toLowerCase()) ||
-      b.id.toLowerCase().includes(search.toLowerCase()) ||
-      b.propertyId.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || b.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = bookings
+    .filter(b => {
+      const matchSearch = !search ||
+        b.guestName.toLowerCase().includes(search.toLowerCase()) ||
+        b.id.toLowerCase().includes(search.toLowerCase()) ||
+        b.propertyId.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+      return matchSearch && matchStatus;
+    })
+    .sort((a, b) => new Date(a.checkIn) - new Date(b.checkIn));
 
   return (
     <div className="p-10 max-w-[1400px] flex flex-col gap-6">
@@ -112,15 +114,25 @@ export function BookingsView() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{booking.guestName || '—'}</TableCell>
-                  <TableCell className="capitalize text-muted-foreground">
-                    {format(new Date(booking.checkIn + 'T00:00:00'), "d MMM", { locale: es })}
+                  <TableCell className="capitalize text-muted-foreground whitespace-nowrap">
+                    {(() => {
+                      try {
+                        const d = booking.checkIn || booking.check_in;
+                        return d ? format(new Date(d + 'T12:00:00'), "d MMM", { locale: es }) : '—';
+                      } catch (e) { return '---'; }
+                    })()}
                   </TableCell>
-                  <TableCell className="capitalize text-muted-foreground">
-                    {format(new Date(booking.checkOut + 'T00:00:00'), "d MMM", { locale: es })}
+                  <TableCell className="capitalize text-muted-foreground whitespace-nowrap">
+                    {(() => {
+                      try {
+                        const d = booking.checkOut || booking.check_out;
+                        return d ? format(new Date(d + 'T12:00:00'), "d MMM", { locale: es }) : '—';
+                      } catch (e) { return '---'; }
+                    })()}
                   </TableCell>
                   <TableCell className="font-semibold text-muted-foreground">{booking.nights}</TableCell>
                   <TableCell className="font-semibold">
-                    {booking.totalAmount > 0 ? `$${booking.totalAmount.toLocaleString()}` : '—'}
+                    {booking.totalAmount > 0 ? formatCurrency(booking.totalAmount) : '—'}
                   </TableCell>
                   <TableCell><StatusBadge status={booking.status} size="sm" /></TableCell>
                 </TableRow>

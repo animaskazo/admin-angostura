@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
+import { formatCurrency } from '@/lib/utils';
 
 const DEFAULT_FORM = {
   propertyId: '',
@@ -23,6 +24,7 @@ const DEFAULT_FORM = {
   status: 'pending',
   paidAmount: 0,
   receiptUrl: '',
+  pricePerNight: 0,
 };
 
 function SectionHeader({ icon: Icon, children }) {
@@ -61,6 +63,7 @@ export function EditBookingModal() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const update = (key, val) => setForm(f => ({ ...f, [key]: val }));
+  const [isFullPayment, setIsFullPayment] = useState(false);
 
   useEffect(() => {
     if (isOpen && booking) {
@@ -78,8 +81,10 @@ export function EditBookingModal() {
         status: booking.status || 'pending',
         paidAmount: booking.paidAmount || 0,
         receiptUrl: booking.receiptUrl || '',
+        pricePerNight: booking.pricePerNight || (booking.nights > 0 ? (booking.totalAmount / booking.nights) : 0),
       });
       setSearchTerm(booking.guestName || '');
+      setIsFullPayment(booking.paidAmount >= booking.totalAmount && booking.totalAmount > 0);
     }
   }, [isOpen, booking]);
 
@@ -87,7 +92,7 @@ export function EditBookingModal() {
   const checkOutDate = new Date(form.checkOut + 'T00:00:00');
   const nights = Math.max(1, Math.round((checkOutDate - checkInDate) / 86400000));
   const selectedProp = properties.find(p => p.id === form.propertyId);
-  const total = selectedProp ? selectedProp.rate * nights : 0;
+  const total = (form.pricePerNight || 0) * nights;
   const availableProps = properties; // For editing, we might want to allow changing to any property
 
   function handleOpenChange(open) {
@@ -166,7 +171,7 @@ export function EditBookingModal() {
         handleOpenChange(false);
       }, 1600);
     } else {
-      alert('Error updating booking');
+      setErrorMsg(result?.error || 'Error al actualizar la reserva.');
     }
   }
 
@@ -204,7 +209,15 @@ export function EditBookingModal() {
               <FormField label="Seleccionar propiedad *">
                 <select
                   value={form.propertyId}
-                  onChange={e => update('propertyId', e.target.value)}
+                  onChange={e => {
+                    const pid = e.target.value;
+                    const prop = properties.find(p => p.id === pid);
+                    setForm(f => ({ 
+                      ...f, 
+                      propertyId: pid, 
+                      pricePerNight: prop ? prop.rate : f.pricePerNight 
+                    }));
+                  }}
                   required
                   className="flex h-9 w-full rounded-[8px] border border-border bg-secondary px-3 text-sm text-foreground transition-all duration-200 focus:outline-none focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary/15 appearance-none cursor-pointer"
                   style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aeaeb2' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
@@ -212,21 +225,35 @@ export function EditBookingModal() {
                   <option value="">Elegir propiedad...</option>
                   <optgroup label="Cabañas">
                     {availableProps.filter(p => p.type === 'cabin').map(p => (
-                      <option key={p.id} value={p.id}>{p.name} — ${p.rate}/noche</option>
+                      <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.rate)}/noche</option>
                     ))}
                   </optgroup>
                   <optgroup label="Suites">
                     {availableProps.filter(p => p.type === 'suite').map(p => (
-                      <option key={p.id} value={p.id}>{p.name} — ${p.rate}/noche</option>
+                      <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.rate)}/noche</option>
                     ))}
                   </optgroup>
                   <optgroup label="Casas">
                     {availableProps.filter(p => p.type === 'house').map(p => (
-                      <option key={p.id} value={p.id}>{p.name} — ${p.rate}/noche</option>
+                      <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.rate)}/noche</option>
                     ))}
                   </optgroup>
                 </select>
               </FormField>
+
+              <div className="animate-in fade-in slide-in-from-top-1">
+                <FormField label="Precio por noche (CLP)">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                    <Input 
+                      type="number" 
+                      className="pl-7"
+                      value={form.pricePerNight} 
+                      onChange={e => update('pricePerNight', parseFloat(e.target.value) || 0)} 
+                    />
+                  </div>
+                </FormField>
+              </div>
               {selectedProp && (
                 <div className="flex items-center gap-3 bg-secondary rounded-[10px] p-3 border border-border">
                   <img src={selectedProp.image} alt={selectedProp.name} className="w-14 h-14 rounded-[8px] object-cover shrink-0" />
@@ -333,16 +360,44 @@ export function EditBookingModal() {
                     <option value="cancelled">Cancelado</option>
                   </select>
                 </FormField>
-                <FormField label="Monto Pagado ($)">
-                  <div className="relative">
-                    <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                    <Input 
-                      type="number" 
-                      min={0} 
-                      className="pl-8" 
-                      value={form.paidAmount} 
-                      onChange={e => update('paidAmount', parseInt(e.target.value) || 0)} 
-                    />
+                <FormField label="Monto Pagado (CLP)">
+                  <div className="flex flex-col gap-2">
+                    <div className="relative">
+                      <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        className="pl-8" 
+                        value={form.paidAmount} 
+                        onChange={e => {
+                          const val = parseInt(e.target.value) || 0;
+                          update('paidAmount', val);
+                          setIsFullPayment(val >= total && total > 0);
+                        }} 
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          className="peer appearance-none w-4 h-4 rounded border border-border bg-secondary checked:bg-primary checked:border-primary transition-all cursor-pointer"
+                          checked={isFullPayment}
+                          onChange={e => {
+                            const checked = e.target.checked;
+                            setIsFullPayment(checked);
+                            if (checked) {
+                              update('paidAmount', total);
+                            }
+                          }}
+                        />
+                        <svg className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors selection:bg-transparent">
+                        Marcar como pago total
+                      </span>
+                    </label>
                   </div>
                 </FormField>
               </div>
@@ -371,15 +426,15 @@ export function EditBookingModal() {
             </div>
 
             {/* Summary */}
-            {selectedProp && (
+            {form.propertyId && (
               <div className="px-6 py-4 bg-secondary border-b border-border">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">${selectedProp.rate} × {nights} noches</span>
-                  <strong className="text-lg font-bold">${total.toLocaleString()}</strong>
+                  <span className="text-sm text-muted-foreground">{formatCurrency(form.pricePerNight)} × {nights} noches</span>
+                  <strong className="text-lg font-bold">{formatCurrency(total)}</strong>
                 </div>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-xs text-muted-foreground">Monto Pendiente</span>
-                  <strong className="text-xs font-semibold text-[#FF3B30]">${Math.max(0, total - form.paidAmount).toLocaleString()}</strong>
+                  <strong className="text-xs font-semibold text-[#FF3B30]">{formatCurrency(Math.max(0, total - form.paidAmount))}</strong>
                 </div>
               </div>
             )}

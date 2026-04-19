@@ -4,13 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store/useStore';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 const TYPE_FILTERS = [
-  { id: 'all', label: 'Todos' },
   { id: 'cabin', label: 'Cabañas' },
   { id: 'suite', label: 'Suites' },
   { id: 'house', label: 'Casas' },
+  { id: 'others', label: 'Otros' },
 ];
 
 function PropertyCard({ property, onBook, onEdit }) {
@@ -41,7 +41,7 @@ function PropertyCard({ property, onBook, onEdit }) {
           </button>
         </div>
         <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-0.5">
-          <DollarSign size={11} />{property.rate}/noche
+          {formatCurrency(property.rate)}/noche
         </div>
       </div>
 
@@ -86,14 +86,14 @@ function PropertyCard({ property, onBook, onEdit }) {
 }
 
 export function PropertiesView() {
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('cabin');
   const setNewBookingModalOpen = useStore(s => s.setNewBookingModalOpen);
   const setPreselectedPropertyId = useStore(s => s.setPreselectedPropertyId);
   const setPropertyModalOpen = useStore(s => s.setPropertyModalOpen);
   const setSelectedProperty = useStore(s => s.setSelectedProperty);
   const properties = useStore(s => s.properties);
 
-  const filtered = activeFilter === 'all' ? properties : properties.filter(p => p.type === activeFilter);
+  const filtered = properties.filter(p => p.type === activeFilter);
   const available = properties.filter(p => p.status === 'available').length;
 
   const handleEdit = (property) => {

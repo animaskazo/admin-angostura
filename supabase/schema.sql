@@ -20,10 +20,34 @@ CREATE TABLE IF NOT EXISTS properties (
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ─── Huéspedes ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS guests (
+  id           BIGSERIAL PRIMARY KEY,
+  full_name    TEXT NOT NULL,
+  email        TEXT,
+  phone        TEXT,
+  document_id  TEXT,
+  notes        TEXT,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── Configuración ───────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS settings (
+  id           TEXT PRIMARY KEY,
+  value        JSONB NOT NULL,
+  updated_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insertar valores iniciales
+INSERT INTO settings (id, value) 
+VALUES ('general', '{"bank_details": "", "booking_conditions": ""}') 
+ON CONFLICT (id) DO NOTHING;
+
 -- ─── Reservas ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS bookings (
   id            TEXT PRIMARY KEY,
   property_id   TEXT NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+  guest_id      BIGINT REFERENCES guests(id) ON DELETE SET NULL,
   guest_name    TEXT NOT NULL,
   guest_email   TEXT,
   guest_phone   TEXT,
@@ -33,8 +57,10 @@ CREATE TABLE IF NOT EXISTS bookings (
   adults        INT NOT NULL DEFAULT 1,
   children      INT NOT NULL DEFAULT 0,
   status        TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed','occupied','maintenance','cleaning','pending','cancelled')),
+  price_per_night NUMERIC(10,2) NOT NULL DEFAULT 0,
   total_amount  NUMERIC(10,2) NOT NULL DEFAULT 0,
   paid_amount   NUMERIC(10,2) NOT NULL DEFAULT 0,
+  receipt_url   TEXT,
   notes         TEXT DEFAULT '',
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
@@ -42,9 +68,11 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- ─── RLS: desactivado para demo ───────────────────────────────
 ALTER TABLE properties DISABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE guests     DISABLE ROW LEVEL SECURITY;
+ALTER TABLE settings   DISABLE ROW LEVEL SECURITY;
 
 -- ─── Limpiar data anterior ────────────────────────────────────
-TRUNCATE bookings, properties RESTART IDENTITY CASCADE;
+TRUNCATE bookings, properties, guests, settings RESTART IDENTITY CASCADE;
 
 -- ─── Seed: Propiedades ────────────────────────────────────────
 INSERT INTO properties (id, name, type, category, image, capacity, bedrooms, bathrooms, rate, amenities, status, description) VALUES

@@ -12,8 +12,11 @@ import { EditBookingModal } from '@/components/bookings/EditBookingModal';
 import { PropertyModal } from '@/components/properties/PropertyModal';
 import { BookingDrawer } from '@/components/bookings/BookingDrawer';
 import { GuestModal } from '@/components/guests/GuestModal';
+import { SettingsView } from '@/components/settings/SettingsView';
 import { useStore } from '@/store/useStore';
 import './index.css';
+
+import { LoginPage } from '@/pages/LoginPage';
 
 function PlaceholderView({ title }) {
   return (
@@ -26,10 +29,22 @@ function PlaceholderView({ title }) {
 
 function App() {
   const fetchAll = useStore(s => s.fetchAll);
+  const session = useStore(s => s.session);
+  const initializeAuth = useStore(s => s.initializeAuth);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    initializeAuth();
+  }, [initializeAuth]);
+
+  useEffect(() => {
+    if (session) {
+      fetchAll();
+    }
+  }, [session, fetchAll]);
+
+  if (!session) {
+    return <LoginPage />;
+  }
 
   return (
     <BrowserRouter>
@@ -38,12 +53,11 @@ function App() {
         <div className="ml-[240px] pt-[60px] flex-1 min-h-screen overflow-y-auto">
           <Topbar />
           <Routes>
-            <Route path="/" element={<DashboardView />} />
-            <Route path="/timeline" element={<TimelineView />} />
+            <Route path="/" element={<TimelineView />} />
             <Route path="/properties" element={<PropertiesView />} />
             <Route path="/bookings" element={<BookingsView />} />
             <Route path="/guests" element={<GuestsView />} />
-            <Route path="/settings" element={<PlaceholderView title="Configuración" />} />
+            <Route path="/settings" element={<SettingsView />} />
             <Route path="/help" element={<PlaceholderView title="Ayuda" />} />
           </Routes>
         </div>
