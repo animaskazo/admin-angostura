@@ -448,7 +448,7 @@ export const useStore = create((set, get) => ({
     const emailHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 12px; background-color: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
-           <img src="https://via.placeholder.com/150x50?text=LOGO+COMPLEJO" alt="Complejo Angostura" style="max-width: 150px; height: auto;" />
+           <img src="https://lpychtqwfoqzxcewyhla.supabase.co/storage/v1/object/public/files/logo.png" alt="Complejo Angostura" style="max-width: 75px; height: auto;" />
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
            <h1 style="font-size: 24px; font-weight: 800; color: #1d1d1f; margin: 0; letter-spacing: -0.5px;">${titles[type] || 'Notificación de Reserva'}</h1>
@@ -564,7 +564,7 @@ ${settings[`msg_${type}`] || (
     const emailHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 12px; background-color: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
-           <img src="https://via.placeholder.com/150x50?text=LOGO+COMPLEJO" alt="Complejo Angostura" style="max-width: 150px; height: auto;" />
+           <img src="https://lpychtqwfoqzxcewyhla.supabase.co/storage/v1/object/public/files/logo.png" alt="Complejo Angostura" style="max-width: 75px; height: auto;" />
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
            <h1 style="font-size: 26px; font-weight: 800; color: #1d1d1f; margin: 0; letter-spacing: -0.5px;">Reserva Grupal Confirmada</h1>

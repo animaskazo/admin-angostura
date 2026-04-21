@@ -18,8 +18,8 @@ export function LoginPage() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err.message === 'Invalid login credentials' 
-        ? 'Credenciales incorrectas. Revisa tu email y contraseña.' 
+      setError(err.message === 'Invalid login credentials'
+        ? 'Credenciales incorrectas. Revisa tu email y contraseña.'
         : 'Error al iniciar sesión. Intenta de nuevo.');
       console.error(err);
     } finally {
@@ -32,8 +32,8 @@ export function LoginPage() {
       <div className="w-full max-w-[400px] flex flex-col items-center">
         {/* Logo Section */}
         <div className="mb-10 text-center animate-in slide-in-from-bottom-4 duration-700">
-          <div className="w-20 h-20 bg-white rounded-3xl shadow-apple-lg border border-border flex items-center justify-center mb-6 mx-auto overflow-hidden">
-             <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-2" />
+          <div className="w-24 h-24 flex items-center justify-center mb-6 mx-auto overflow-hidden">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-2" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">Panel de Administración</h1>
           <p className="text-muted-foreground text-sm mt-2">Complejo Angostura · Gestión de Reservas</p>
@@ -49,8 +49,8 @@ export function LoginPage() {
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Mail size={16} />
                   </div>
-                  <Input 
-                    type="email" 
+                  <Input
+                    type="email"
                     placeholder="admin@complejo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -66,8 +66,8 @@ export function LoginPage() {
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Lock size={16} />
                   </div>
-                  <Input 
-                    type="password" 
+                  <Input
+                    type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -85,8 +85,8 @@ export function LoginPage() {
               </div>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 bg-primary text-white font-bold rounded-xl shadow-apple-md hover:bg-primary/90 transition-all active:scale-[0.98]"
               disabled={loading}
             >
