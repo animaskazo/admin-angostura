@@ -654,6 +654,9 @@ ${settings[`msg_${type}`] || (
   isNewBookingModalOpen: false,
   setNewBookingModalOpen: (open) => set({ isNewBookingModalOpen: open }),
 
+  isCancelBookingModalOpen: false,
+  setCancelBookingModalOpen: (open) => set({ isCancelBookingModalOpen: open }),
+
   isEditBookingModalOpen: false,
   setEditBookingModalOpen: (open) => set({ isEditBookingModalOpen: open }),
 

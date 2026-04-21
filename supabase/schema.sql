@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS properties (
   bathrooms    INT NOT NULL DEFAULT 1,
   rate         NUMERIC(10,2) NOT NULL,
   amenities    TEXT[] DEFAULT '{}',
-  status       TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available','occupied','confirmed','maintenance','cleaning')),
+  status       TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available','occupied','confirmed','maintenance','cleaning','blocked')),
   description  TEXT,
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   nights        INT NOT NULL,
   adults        INT NOT NULL DEFAULT 1,
   children      INT NOT NULL DEFAULT 0,
-  status        TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed','occupied','maintenance','cleaning','pending','cancelled')),
+  status        TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed','occupied','maintenance','cleaning','pending','cancelled','blocked','paid_cash','paid_transfer')),
   price_per_night NUMERIC(10,2) NOT NULL DEFAULT 0,
   total_amount  NUMERIC(10,2) NOT NULL DEFAULT 0,
   paid_amount   NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -91,7 +91,11 @@ INSERT INTO properties (id, name, type, category, image, capacity, bedrooms, bat
 -- CASAS
 ('H-08', 'Casa del Valle',    'house', 'Villa',           'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=500&q=80', 8,  4, 3, 580.00, ARRAY['Piscina','BBQ','Jardín','Estacionamiento','Cocina de chef'],       'occupied',  'Gran villa familiar con piscina privada y jardín de 500m².'),
 ('H-09', 'Casa Colonial',     'house', 'Histórica',       'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&q=80', 6,  3, 2, 420.00, ARRAY['Arquitectura colonial','Patio interior','Fogón','Sala de juegos','Wi-Fi'], 'available', 'Casa de estilo colonial con patio interior y fogón tradicional.'),
-('H-10', 'Casa Moderna',      'house', 'Contemporánea',   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'confirmed', 'La casa más grande del complejo. Diseño contemporáneo premium.');
+('H-10', 'Casa Moderna',      'house', 'Contemporánea',   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'confirmed', 'La casa más grande del complejo. Diseño contemporáneo premium.'),
+('H-11', 'Casa de la Colina', 'house', 'Premium',         'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'available', 'Casa premium con vistas panorámicas.'),
+('H-12', 'Casa del Bosque Real', 'house', 'Premium',      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'available', 'Residencia de gran tamaño en entorno natural.'),
+('H-13', 'Casa del Lago Superior', 'house', 'Premium',    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'available', 'Vista inmejorable al lago y terminaciones de lujo.'),
+('H-14', 'Casa de Cristal',   'house', 'Premium',         'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=500&q=80', 10, 5, 4, 780.00, ARRAY['Piscina infinita','Gym privado','Cine','Smart Home','Sauna'],     'available', 'Diseño moderno con grandes ventanales y mucha luz.');
 
 -- ─── Seed: Reservas ───────────────────────────────────────────
 INSERT INTO bookings (id, property_id, guest_name, guest_email, guest_phone, check_in, check_out, nights, adults, children, status, total_amount, paid_amount, notes) VALUES

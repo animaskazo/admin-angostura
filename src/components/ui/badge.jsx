@@ -20,6 +20,7 @@ const badgeVariants = cva(
         cleaning: 'bg-[#FFF3E0] text-[#FF9500]',
         available: 'bg-[#E8F8ED] text-[#34C759]',
         cancelled: 'bg-[#F2F2F7] text-[#8E8E93]',
+        blocked: 'bg-[#F2F2F7] text-[#1d1d1f]',
       },
       size: {
         sm: 'px-2 py-0.5 text-[10px]',
@@ -58,7 +59,8 @@ function StatusBadge({ status, size = 'default', className }) {
     maintenance: 'Mantenimiento',
     cleaning: 'Limpieza',
     available: 'Disponible',
-    cancelled: 'Cancelado'
+    cancelled: 'Cancelado',
+    blocked: 'Bloqueado'
   };
   return (
     <Badge variant={status} size={size} className={className}>

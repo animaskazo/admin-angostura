@@ -14,9 +14,10 @@ export function BookingDrawer() {
   const setEditBookingModalOpen = useStore(s => s.setEditBookingModalOpen);
   const updateBooking = useStore(s => s.updateBooking);
   const sendBookingEmail = useStore(s => s.sendBookingEmail);
+  const setCancelBookingModalOpen = useStore(s => s.setCancelBookingModalOpen);
 
   if (!booking) return null;
-  
+
   const prop = properties.find(p => p.id === (booking.propertyId || booking.property_id));
   const paidPct = (booking.totalAmount || booking.total_amount) > 0 
     ? Math.round(((booking.paidAmount || booking.paid_amount || 0) / (booking.totalAmount || booking.total_amount)) * 100) 
@@ -24,23 +25,8 @@ export function BookingDrawer() {
 
   const onClose = () => setSelectedBooking(null);
 
-  const handleCancel = async () => {
-    if (confirm('¿Estás seguro de que deseas cancelar esta reserva? Se enviará un correo de notificación y luego se ELIMINARÁ permanentemente de la base de datos.')) {
-      
-      // Paso 1: Enviar Email de Cancelación mientras los datos aún existen
-      console.log('🔄 Iniciando envío de correo de cancelación antes de borrar...');
-      await sendBookingEmail(booking, prop, 'cancelled');
-      
-      // Paso 2: Borrar físicamente de la base de datos
-      console.log('🗑️ Email enviado. Procediendo a eliminar reserva de la DB...');
-      const { success, error } = await deleteBooking(booking.id);
-      
-      if (success) {
-        onClose();
-      } else {
-        alert('Error al eliminar de la base de datos: ' + error);
-      }
-    }
+  const handleCancel = () => {
+    setCancelBookingModalOpen(true);
   };
 
   const renderDate = (dateStr) => {

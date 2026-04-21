@@ -13,6 +13,10 @@ export const properties = [
   { id: 'H-08', name: 'Casa del Valle', type: 'house', category: 'Villa', image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80', capacity: 8, bedrooms: 4, bathrooms: 3, rate: 580, amenities: ['Piscina', 'BBQ', 'Jardín amplio', 'Estacionamiento', 'Cocina de chef'], status: 'occupied', description: 'Gran villa familiar con piscina privada y jardín de 500m².' },
   { id: 'H-09', name: 'Casa Colonial', type: 'house', category: 'Histórica', image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80', capacity: 6, bedrooms: 3, bathrooms: 2, rate: 420, amenities: ['Arquitectura colonial', 'Patio interior', 'Fogón', 'Sala de juegos', 'Wi-Fi'], status: 'available', description: 'Casa de estilo colonial con patio interior y fogón tradicional.' },
   { id: 'H-10', name: 'Casa Moderna', type: 'house', category: 'Contemporánea', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80', capacity: 10, bedrooms: 5, bathrooms: 4, rate: 780, amenities: ['Piscina infinita', 'Gym privado', 'Cine', 'Smart Home', 'Sauna'], status: 'confirmed', description: 'La casa más grande del complejo. Diseño contemporáneo premium.' },
+  { id: 'H-11', name: 'Casa de la Colina', type: 'house', category: 'Premium', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80', capacity: 10, bedrooms: 5, bathrooms: 4, rate: 780, amenities: ['Piscina infinita', 'Gym privado', 'Cine', 'Smart Home', 'Sauna'], status: 'available', description: 'Casa premium con vistas panorámicas.' },
+  { id: 'H-12', name: 'Casa del Bosque Real', type: 'house', category: 'Premium', image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&q=80', capacity: 10, bedrooms: 5, bathrooms: 4, rate: 780, amenities: ['Piscina infinita', 'Gym privado', 'Cine', 'Smart Home', 'Sauna'], status: 'available', description: 'Residencia de gran tamaño en entorno natural.' },
+  { id: 'H-13', name: 'Casa del Lago Superior', type: 'house', category: 'Premium', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80', capacity: 10, bedrooms: 5, bathrooms: 4, rate: 780, amenities: ['Piscina infinita', 'Gym privado', 'Cine', 'Smart Home', 'Sauna'], status: 'available', description: 'Vista inmejorable al lago y terminaciones de lujo.' },
+  { id: 'H-14', name: 'Casa de Cristal', type: 'house', category: 'Premium', image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400&q=80', capacity: 10, bedrooms: 5, bathrooms: 4, rate: 780, amenities: ['Piscina infinita', 'Gym privado', 'Cine', 'Smart Home', 'Sauna'], status: 'available', description: 'Diseño moderno con grandes ventanales y mucha luz.' },
 ];
 
 export const bookings = [
@@ -45,4 +49,5 @@ export const statusConfig = {
   cleaning:      { label: 'Limpieza',      color: '#FF9500', bg: '#FFF3E0' },
   available:     { label: 'Disponible',    color: '#34C759', bg: '#E8F8ED' },
   cancelled:     { label: 'Cancelado',     color: '#8E8E93', bg: '#F2F2F7' },
+  blocked:       { label: 'Bloqueado',     color: '#1d1d1f', bg: '#F2F2F7' },
 };

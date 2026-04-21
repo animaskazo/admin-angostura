@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, Users, FileText, Building2, Activity, CheckCircle2, Download, Home, UserCheck } from 'lucide-react';
+import { X, Calendar, Users, FileText, Building2, Activity, CheckCircle2, Download, Home, UserCheck, ChevronLeft } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const DEFAULT_FORM = {
   notes: '',
   status: 'pending',
   receiptUrl: '',
-  pricingMode: 'per_property', // 'per_property' | 'per_person'
+  pricingMode: 'per_property', // 'per_property' | 'per_person' | 'blocked'
   extraChargeLabel: '',
   extraChargeAmount: 0,
   extraChargeQuantity: 1,
@@ -203,12 +203,14 @@ export function NewBookingModal() {
       const res = await addBooking({
         ...form,
         propertyId: prop.id,
-        pricePerNight: prop.pricePerNight,
-        guestId: currentGuestId,
+        pricePerNight: form.pricingMode === 'blocked' ? 0 : prop.pricePerNight,
+        guestId: form.pricingMode === 'blocked' ? null : currentGuestId,
+        guestName: form.pricingMode === 'blocked' ? 'PROPIEDAD BLOQUEADA' : form.guestName,
+        status: form.pricingMode === 'blocked' ? 'blocked' : 'pending',
         nights,
-        totalAmount: propTotal,
+        totalAmount: form.pricingMode === 'blocked' ? 0 : propTotal,
         paidAmount: 0
-      }, { skipEmail: isGroup }); // Omitir email individual si es un grupo
+      }, { skipEmail: isGroup || form.pricingMode === 'blocked' }); // Omitir email individual si es un grupo o bloqueo
       results.push(res);
     }
 
@@ -254,34 +256,40 @@ export function NewBookingModal() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[1000px] h-[90vh] max-h-[850px] gap-0 p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="shrink-0">
-          <div className="flex items-center gap-3">
-            <div>
-              <DialogTitle>Nueva Reserva</DialogTitle>
-              <DialogDescription>
-                {step === 'select_mode'
-                  ? 'Elige el tipo de cobro para esta reserva'
-                  : 'Completa los datos para registrar la reserva'
-                }
-              </DialogDescription>
-            </div>
+        <DialogHeader className="shrink-0 flex flex-row items-start justify-between">
+          <div className="flex flex-col">
+            <DialogTitle>Nueva Reserva</DialogTitle>
+            <DialogDescription>
+              {step === 'select_mode'
+                ? 'Elige el tipo de cobro para esta reserva'
+                : 'Completa los datos para registrar la reserva'
+              }
+            </DialogDescription>
+          </div>
+
+          <div className="flex items-center gap-2">
             {step === 'form' && (
               <button
                 type="button"
                 onClick={() => setStep('select_mode')}
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-border bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors"
+                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border border-border bg-secondary/50 text-muted-foreground hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all group"
               >
-                {form.pricingMode === 'per_property' ? <Home size={10} /> : <UserCheck size={10} />}
-                {form.pricingMode === 'per_property' ? 'Por Propiedad' : 'Por Persona'}
+                <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                <span>Volver</span>
+                <span className="opacity-40 mx-0.5">|</span>
+                <span className="text-foreground/70">
+                  {form.pricingMode === 'per_property' ? 'Propiedad' : form.pricingMode === 'per_person' ? 'Persona' : 'Bloqueo'}
+                </span>
               </button>
             )}
+
+            <button
+              onClick={() => setOpen(false)}
+              className="w-9 h-9 flex items-center justify-center bg-secondary/50 border border-border rounded-xl text-muted-foreground hover:bg-[#FFECEA] hover:border-[#FF3B30] hover:text-[#FF3B30] transition-all"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            onClick={() => setOpen(false)}
-            className="w-8 h-8 flex items-center justify-center bg-secondary border border-border rounded-[8px] text-muted-foreground hover:bg-[#FFECEA] hover:border-[#FF3B30] hover:text-[#FF3B30] transition-colors shrink-0"
-          >
-            <X size={16} />
-          </button>
         </DialogHeader>
 
         {/* STEP 0: Selección de modo */}
@@ -317,6 +325,25 @@ export function NewBookingModal() {
                   <span className="text-base font-bold">Por Persona</span>
                   <span className="text-[11px] text-muted-foreground leading-relaxed">El precio se multiplica por el número de personas en la reserva</span>
                   <span className="mt-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">tarifa × personas × noches</span>
+                </div>
+              </button>
+            </div>
+
+            <div className="w-full max-w-[520px]">
+              <button
+                type="button"
+                onClick={() => handleSelectMode('blocked')}
+                className="group w-full flex items-center gap-6 p-6 rounded-2xl border-2 border-border bg-card hover:border-[#1d1d1f] hover:bg-[#F2F2F7] transition-all duration-200 text-left"
+              >
+                <div className="w-12 h-12 rounded-xl bg-secondary group-hover:bg-foreground/5 flex items-center justify-center transition-colors">
+                  <Activity size={24} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-base font-bold">Bloquear Propiedad</span>
+                  <span className="text-[11px] text-muted-foreground">Marca la unidad como no disponible (mantenimiento, uso personal, etc.)</span>
+                </div>
+                <div className="ml-auto w-8 h-8 rounded-full border border-border flex items-center justify-center group-hover:bg-foreground group-hover:text-white transition-all">
+                  <ChevronLeft size={16} className="rotate-180" />
                 </div>
               </button>
             </div>
@@ -451,137 +478,152 @@ export function NewBookingModal() {
                   </div>
                 </div>
 
-                {/* Huésped */}
-                <div className="p-6 border-b border-border flex flex-col gap-4">
-                  <SectionHeader icon={Users}>Información del Huésped</SectionHeader>
-                  <div className="relative">
-                    <FormField label="Nombre completo *">
-                      <Input
-                        placeholder="Ej: García, Roberto"
-                        value={searchTerm || form.guestName}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setSearchTerm(val);
-                          update('guestName', val);
-                          if (form.guestId) update('guestId', null);
-                          setShowGuestChips(true);
-                        }}
-                        onFocus={() => setShowGuestChips(true)}
-                        required
-                        className="bg-secondary/50"
-                      />
-                    </FormField>
-                    {showGuestChips && filteredGuests.length > 0 && (
-                      <div className="absolute top-full left-0 w-full mt-1 bg-card border border-border rounded-xl shadow-apple-lg z-50 overflow-hidden">
-                        {filteredGuests.map(g => (
-                          <button key={g.id} type="button" className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary flex flex-col" onClick={() => handleSelectGuest(g)}>
-                            <span className="font-semibold">{g.fullName}</span>
-                            <span className="text-[10px] text-muted-foreground">{g.email || g.phone}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Teléfono">
-                      <Input
-                        type="tel"
-                        placeholder="Ej: +56 9 1234 5678"
-                        value={form.guestPhone}
-                        onChange={e => update('guestPhone', e.target.value)}
-                        className="bg-secondary/50"
-                      />
-                    </FormField>
-                    <FormField label="Email">
-                      <Input
-                        type="email"
-                        placeholder="Ej: nombre@correo.com"
-                        value={form.guestEmail}
-                        onChange={e => update('guestEmail', e.target.value)}
-                        className="bg-secondary/50"
-                      />
-                    </FormField>
-                  </div>
-                  <FormField label="Notas adicionales">
-                    <Textarea
-                      placeholder="Alguna observación..."
-                      className="bg-secondary/50 min-h-[40px] py-2"
-                      value={form.notes}
-                      onChange={e => update('notes', e.target.value)}
-                    />
-                  </FormField>
-                </div>
-
-
-                {/* Administración */}
-                <div className="p-6 flex flex-col gap-4">
-
-
-                  <div className="grid grid-cols-1 gap-4">
-                    {/* Personas (solo visible en modo per_person) */}
-                    {form.pricingMode === 'per_person' && (
-                      <FormField label="Personas">
+                {/* Huésped (Oculto en Bloqueo) */}
+                {form.pricingMode !== 'blocked' ? (
+                  <div className="p-6 border-b border-border flex flex-col gap-4">
+                    <SectionHeader icon={Users}>Información del Huésped</SectionHeader>
+                    <div className="relative">
+                      <FormField label="Nombre completo *">
                         <Input
-                          type="number" min={1} max={99}
-                          value={form.adults}
-                          onChange={e => update('adults', parseInt(e.target.value) || 1)}
+                          placeholder="Ej: García, Roberto"
+                          value={searchTerm || form.guestName}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setSearchTerm(val);
+                            update('guestName', val);
+                            if (form.guestId) update('guestId', null);
+                            setShowGuestChips(true);
+                          }}
+                          onFocus={() => setShowGuestChips(true)}
+                          required
                           className="bg-secondary/50"
                         />
                       </FormField>
-                    )}
-                  </div>
-
-                  {/* Cobro Extra */}
-                  <div className="flex flex-col gap-2 p-3 rounded-xl border border-dashed border-border bg-secondary/5">
-                    <Label className="text-[10px] uppercase tracking-wider font-bold opacity-50">Cobro Extra (Opcional)</Label>
-                    <div className="grid grid-cols-[1fr,100px,100px] gap-3">
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-[9px] uppercase font-bold opacity-70">Concepto</Label>
-                        <Input
-                          placeholder="Mascotas, Tina, etc."
-                          value={form.extraChargeLabel}
-                          onChange={e => update('extraChargeLabel', e.target.value)}
-                          className="h-9 text-xs bg-secondary border-none"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-[9px] uppercase font-bold opacity-70">Valor $</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={form.extraChargeAmount || ''}
-                          onChange={e => update('extraChargeAmount', parseFloat(e.target.value) || 0)}
-                          className="h-9 text-xs font-semibold bg-secondary border-none"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-[9px] uppercase font-bold opacity-70">Cantidad</Label>
-                        <Input
-                          type="number"
-                          placeholder="1"
-                          min={1}
-                          value={form.extraChargeQuantity}
-                          onChange={e => update('extraChargeQuantity', parseInt(e.target.value) || 1)}
-                          className="h-9 text-xs bg-secondary border-none"
-                        />
-                      </div>
+                      {showGuestChips && filteredGuests.length > 0 && (
+                        <div className="absolute top-full left-0 w-full mt-1 bg-card border border-border rounded-xl shadow-apple-lg z-50 overflow-hidden">
+                          {filteredGuests.map(g => (
+                            <button key={g.id} type="button" className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary flex flex-col" onClick={() => handleSelectGuest(g)}>
+                              <span className="font-semibold">{g.fullName}</span>
+                              <span className="text-[10px] text-muted-foreground">{g.email || g.phone}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {form.extraChargeAmount > 0 && (
-                      <div className="flex items-center gap-2 mt-1 animate-in fade-in slide-in-from-top-1">
-                        <input
-                          type="checkbox"
-                          id="isDaily"
-                          checked={form.extraChargeIsDaily}
-                          onChange={e => update('extraChargeIsDaily', e.target.checked)}
-                          className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary/20 cursor-pointer"
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField label="Teléfono">
+                        <Input
+                          type="tel"
+                          placeholder="Ej: +56 9 1234 5678"
+                          value={form.guestPhone}
+                          onChange={e => update('guestPhone', e.target.value)}
+                          className="bg-secondary/50"
                         />
-                        <Label htmlFor="isDaily" className="text-[11px] cursor-pointer text-muted-foreground select-none">
-                          Costo diario <span className="opacity-50">(se multiplica por {nights} noches)</span>
-                        </Label>
-                      </div>
-                    )}
+                      </FormField>
+                      <FormField label="Email">
+                        <Input
+                          type="email"
+                          placeholder="Ej: nombre@correo.com"
+                          value={form.guestEmail}
+                          onChange={e => update('guestEmail', e.target.value)}
+                          className="bg-secondary/50"
+                        />
+                      </FormField>
+                    </div>
+                    <FormField label="Notas adicionales">
+                      <Textarea
+                        placeholder="Alguna observación..."
+                        className="bg-secondary/50 min-h-[40px] py-2"
+                        value={form.notes}
+                        onChange={e => update('notes', e.target.value)}
+                      />
+                    </FormField>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-6 border-b border-border flex flex-col gap-4 animate-in fade-in">
+                    <SectionHeader icon={Activity}>Motivo del Bloqueo</SectionHeader>
+                    <FormField label="Razón o Descripción">
+                      <Textarea
+                        placeholder="Ej: Mantenimiento anual, reparación de filtración, reserva de dueño, etc."
+                        className="bg-secondary/50 min-h-[100px]"
+                        value={form.notes}
+                        onChange={e => update('notes', e.target.value)}
+                        required
+                      />
+                    </FormField>
+                  </div>
+                )}
+
+
+                {/* Administración (Oculto en Bloqueo) */}
+                {form.pricingMode !== 'blocked' && (
+                  <div className="p-6 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Personas (solo visible en modo per_person) */}
+                      {form.pricingMode === 'per_person' && (
+                        <FormField label="Personas">
+                          <Input
+                            type="number" min={1} max={99}
+                            value={form.adults}
+                            onChange={e => update('adults', parseInt(e.target.value) || 1)}
+                            className="bg-secondary/50"
+                          />
+                        </FormField>
+                      )}
+                    </div>
+
+                    {/* Cobro Extra */}
+                    <div className="flex flex-col gap-2 p-3 rounded-xl border border-dashed border-border bg-secondary/5">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold opacity-50">Cobro Extra (Opcional)</Label>
+                      <div className="grid grid-cols-[1fr,100px,100px] gap-3">
+                        <div className="flex flex-col gap-1">
+                          <Label className="text-[9px] uppercase font-bold opacity-70">Concepto</Label>
+                          <Input
+                            placeholder="Mascotas, Tina, etc."
+                            value={form.extraChargeLabel}
+                            onChange={e => update('extraChargeLabel', e.target.value)}
+                            className="h-9 text-xs bg-secondary border-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Label className="text-[9px] uppercase font-bold opacity-70">Valor $</Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            value={form.extraChargeAmount || ''}
+                            onChange={e => update('extraChargeAmount', parseFloat(e.target.value) || 0)}
+                            className="h-9 text-xs font-semibold bg-secondary border-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Label className="text-[9px] uppercase font-bold opacity-70">Cantidad</Label>
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            min={1}
+                            value={form.extraChargeQuantity}
+                            onChange={e => update('extraChargeQuantity', parseInt(e.target.value) || 1)}
+                            className="h-9 text-xs bg-secondary border-none"
+                          />
+                        </div>
+                      </div>
+                      {form.extraChargeAmount > 0 && (
+                        <div className="flex items-center gap-2 mt-1 animate-in fade-in slide-in-from-top-1">
+                          <input
+                            type="checkbox"
+                            id="isDaily"
+                            checked={form.extraChargeIsDaily}
+                            onChange={e => update('extraChargeIsDaily', e.target.checked)}
+                            className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary/20 cursor-pointer"
+                          />
+                          <Label htmlFor="isDaily" className="text-[11px] cursor-pointer text-muted-foreground select-none">
+                            Costo diario <span className="opacity-50">(se multiplica por {nights} noches)</span>
+                          </Label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -606,12 +648,14 @@ export function NewBookingModal() {
                   </div>
                   <div className="flex flex-col items-end shrink-0">
                     <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
-                      {form.pricingMode === 'per_person'
+                      {form.pricingMode === 'blocked' ? 'Estado del Bloqueo' : form.pricingMode === 'per_person'
                         ? `Total · ${totalPersons} persona${totalPersons !== 1 ? 's' : ''} · ${nights} noches`
                         : `Total · ${nights} noche${nights !== 1 ? 's' : ''}`
                       }
                     </span>
-                    <span className="text-xl font-bold text-primary leading-none tabular-nums">{formatCurrency(total)}</span>
+                    <span className={cn("text-xl font-bold leading-none tabular-nums", form.pricingMode === 'blocked' ? 'text-muted-foreground' : 'text-primary')}>
+                      {form.pricingMode === 'blocked' ? 'FECHAS BLOQUEADAS' : formatCurrency(total)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -736,8 +780,23 @@ export function NewBookingModal() {
                     Resumen PDF
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
-                  <Button type="submit" size="sm" disabled={form.selectedProperties.length === 0 || !form.guestName || saving} className="px-6 h-9">
-                    {saving ? 'Guardando...' : `Reservar (${form.selectedProperties.length})`}
+                  <Button 
+                    type="submit" 
+                    size="sm" 
+                    disabled={
+                      form.selectedProperties.length === 0 || 
+                      (form.pricingMode !== 'blocked' && !form.guestName) || 
+                      (form.pricingMode === 'blocked' && !form.notes) ||
+                      saving
+                    } 
+                    className="px-6 h-9"
+                  >
+                    {saving 
+                      ? 'Guardando...' 
+                      : form.pricingMode === 'blocked' 
+                        ? `Bloquear (${form.selectedProperties.length})` 
+                        : `Reservar (${form.selectedProperties.length})`
+                    }
                   </Button>
                 </div>
               </div>

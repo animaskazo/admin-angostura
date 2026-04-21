@@ -22,16 +22,7 @@ export function Topbar() {
         <h1 className="text-[14px] font-bold tracking-tight text-foreground uppercase opacity-80">{title}</h1>
       </div>
 
-      <div className="flex-1 flex justify-center max-w-lg mx-auto px-6">
-        <div className="relative flex items-center w-full">
-          <Search size={13} className="absolute left-3 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="w-full h-8 pl-8 pr-4 bg-secondary/50 border border-border rounded-lg text-[13px] text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:outline-none focus:border-primary focus:bg-card focus:ring-4 focus:ring-primary/5"
-          />
-        </div>
-      </div>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-6 shrink-0">
         <div className="flex flex-col items-end">

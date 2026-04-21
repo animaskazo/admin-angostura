@@ -6,12 +6,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 export function SettingsView() {
   const { settings, updateSettings, loading } = useStore();
   const [formData, setFormData] = useState({
     bank_details: '',
-    booking_conditions: '',
+    booking_conditions: {
+      cabin: '',
+      suite: '',
+      house: '',
+      others: ''
+    },
     email_confirmed: true,
     email_cancelled: true,
     email_modified: true,
@@ -21,14 +27,29 @@ export function SettingsView() {
     msg_cancelled: '',
     msg_modified: '',
   });
+  const [conditionTab, setConditionTab] = useState('cabin');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (settings) {
+      // Handle legacy string conditions or existing object
+      let conditions = { cabin: '', suite: '', house: '', others: '' };
+      if (typeof settings.booking_conditions === 'string') {
+        // Migration: put old string in all if it's the only one, or just cabin
+        conditions = { 
+          cabin: settings.booking_conditions, 
+          suite: settings.booking_conditions, 
+          house: settings.booking_conditions, 
+          others: settings.booking_conditions 
+        };
+      } else if (settings.booking_conditions && typeof settings.booking_conditions === 'object') {
+        conditions = { ...conditions, ...settings.booking_conditions };
+      }
+
       setFormData({
         bank_details: settings.bank_details || '',
-        booking_conditions: settings.booking_conditions || '',
+        booking_conditions: conditions,
         email_confirmed: settings.email_confirmed ?? true,
         email_cancelled: settings.email_cancelled ?? true,
         email_modified: settings.email_modified ?? true,
@@ -165,7 +186,7 @@ export function SettingsView() {
             />
           </Card>
 
-          {/* Conditions */}
+          {/* Conditions per Property Type */}
           <Card className="p-6 flex flex-col gap-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
@@ -174,14 +195,47 @@ export function SettingsView() {
               <h2 className="text-lg font-semibold">Condiciones de la Reserva</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Políticas de cancelación, horarios de check-in/out y normas del complejo.
+              Define políticas específicas según el tipo de propiedad. Estos textos aparecerán en el resumen PDF y correos.
             </p>
-            <Textarea 
-              placeholder="Ej: Check-in a partir de las 15:00 hrs. La cancelación con menos de 48 hrs..."
-              className="min-h-[150px] text-sm leading-relaxed"
-              value={formData.booking_conditions}
-              onChange={e => setFormData(f => ({ ...f, booking_conditions: e.target.value }))}
-            />
+
+            <div className="grid grid-cols-4 gap-1 p-1 bg-secondary rounded-xl">
+              {[
+                { id: 'cabin', label: 'Cabañas', emoji: '🏕️' },
+                { id: 'suite', label: 'Suites', emoji: '🛏️' },
+                { id: 'house', label: 'Casas', emoji: '🏡' },
+                { id: 'others', label: 'Otros', emoji: '🏷️' },
+              ].map(type => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setConditionTab(type.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
+                    conditionTab === type.id 
+                      ? "bg-card text-primary shadow-sm ring-1 ring-border" 
+                      : "text-muted-foreground hover:bg-card/50"
+                  )}
+                >
+                  <span className="text-lg">{type.emoji}</span>
+                  {type.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative">
+              <Textarea 
+                placeholder={`Condiciones para ${conditionTab === 'cabin' ? 'Cabañas' : conditionTab === 'suite' ? 'Suites' : conditionTab === 'house' ? 'Casas' : 'otros servicios'}...`}
+                className="min-h-[220px] text-sm leading-relaxed border-border focus:ring-4 focus:ring-purple-500/5 transition-all"
+                value={formData.booking_conditions[conditionTab] || ''}
+                onChange={e => {
+                  const newConditions = { ...formData.booking_conditions, [conditionTab]: e.target.value };
+                  setFormData(f => ({ ...f, booking_conditions: newConditions }));
+                }}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              * Si dejas un campo vacío, se usará la condición general de forma predeterminada.
+            </p>
           </Card>
 
           {/* Fixed Footer Bar */}

@@ -12,6 +12,7 @@ import { EditBookingModal } from '@/components/bookings/EditBookingModal';
 import { PropertyModal } from '@/components/properties/PropertyModal';
 import { BookingDrawer } from '@/components/bookings/BookingDrawer';
 import { GuestModal } from '@/components/guests/GuestModal';
+import { CancelBookingModal } from '@/components/bookings/CancelBookingModal';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { useStore } from '@/store/useStore';
 import './index.css';
@@ -66,6 +67,7 @@ function App() {
         <PropertyModal />
         <BookingDrawer />
         <GuestModal />
+        <CancelBookingModal />
       </div>
     </BrowserRouter>
   );
